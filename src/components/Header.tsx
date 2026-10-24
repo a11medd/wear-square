@@ -8,7 +8,7 @@ import { ProductCard } from "./ProductCard";
 const POPULAR = ["Tee", "Hoodie", "Dress", "Jeans", "فستان", "تيشيرت", "هودي"];
 
 export function Header({ overHero }: { overHero: boolean }) {
-  const { t, lang, setLang, cartCount, navigate, route, searchOpen, setSearchOpen, drawerOpen, setDrawerOpen } = useApp();
+  const { t, lang, setLang, cartCount, navigate, route, searchOpen, setSearchOpen, drawerOpen, setDrawerOpen, setCartDrawerOpen } = useApp();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -78,18 +78,34 @@ export function Header({ overHero }: { overHero: boolean }) {
             <button
               aria-label={lang === "en" ? "التبديل إلى العربية" : "Switch to English"}
               onClick={() => setLang(lang === "en" ? "ar" : "en")}
+              data-testid="header-lang-btn"
               className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-cream/30 px-3 py-1.5 text-[0.72rem] font-medium tracking-wider hover:bg-cream/10 transition-colors"
             >
               <IcGlobe className="h-4 w-4" />
               {lang === "en" ? "عربي" : "EN"}
             </button>
-            <button className="p-2.5 hover:bg-cream/10 rounded-full transition-colors" aria-label={t("nav.search")} onClick={() => setSearchOpen(true)}>
+            <button
+              className="p-2.5 hover:bg-cream/10 rounded-full transition-colors"
+              aria-label={t("nav.search")}
+              data-testid="header-search-btn"
+              onClick={() => setSearchOpen(true)}
+            >
               <IcSearch className="h-5 w-5" />
             </button>
-            <button className="p-2.5 hover:bg-cream/10 rounded-full transition-colors hidden sm:block" aria-label={t("nav.account")} onClick={() => go("/account")}>
+            <button
+              className="p-2.5 hover:bg-cream/10 rounded-full transition-colors hidden sm:block"
+              aria-label={t("nav.account")}
+              data-testid="header-account-btn"
+              onClick={() => go("/account")}
+            >
               <IcUser className="h-5 w-5" />
             </button>
-            <button className="relative p-2.5 hover:bg-cream/10 rounded-full transition-colors" aria-label={`${t("nav.cart")} (${cartCount})`} onClick={() => go("/cart")}>
+            <button
+              className="relative p-2.5 hover:bg-cream/10 rounded-full transition-colors"
+              aria-label={`${t("nav.cart")} (${cartCount})`}
+              data-testid="header-cart-btn"
+              onClick={() => setCartDrawerOpen(true)}
+            >
               <IcBag className="h-5 w-5" />
               {cartCount > 0 && (
                 <span key={cartCount} className="anim-pop absolute -top-0.5 -end-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-cream px-1 text-[0.65rem] font-bold text-wine-900">

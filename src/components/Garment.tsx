@@ -338,7 +338,7 @@ export function Garment({
           <filter id={`b${uid}`} x="-40%" y="-40%" width="180%" height="180%">
             <feGaussianBlur stdDeviation="7" />
           </filter>
-          <pattern id={`t${uid}`} width="7" height="7" patternUnits="userSpaceUse" patternTransform="rotate(6)">
+          <pattern id={`t${uid}`} width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(6)">
             <path d="M0,3.5 Q3.5,0.5 7,3.5" fill="none" stroke={p.seam} strokeWidth="0.8" opacity="0.35" />
           </pattern>
           <clipPath id={`c${uid}`}><rect x="0" y="0" width="400" height="520" /></clipPath>

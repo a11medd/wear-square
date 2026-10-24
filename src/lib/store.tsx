@@ -77,6 +77,8 @@ interface AppCtx {
   setSearchOpen: (v: boolean) => void;
   drawerOpen: boolean;
   setDrawerOpen: (v: boolean) => void;
+  cartDrawerOpen: boolean;
+  setCartDrawerOpen: (v: boolean) => void;
   user: AccountUser | null;
   login: (name: string, email: string) => void;
   logout: () => void;
@@ -123,6 +125,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<{ id: number; text: string }[]>([]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const toastId = useRef(0);
 
   const t = useMemo(() => makeT(lang), [lang]);
@@ -180,6 +183,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
       return [...c, { id: p.id, colorId, size, qty: 1 }];
     });
+    setCartDrawerOpen(true);
     return result;
   }, []);
 
@@ -230,6 +234,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     toasts, toast,
     searchOpen, setSearchOpen,
     drawerOpen, setDrawerOpen,
+    cartDrawerOpen, setCartDrawerOpen,
     user, login, logout,
     orders, placeOrder,
     addresses, removeAddress,

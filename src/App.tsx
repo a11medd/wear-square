@@ -2,6 +2,7 @@ import { AppProvider, useApp } from "./lib/store";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { Toasts } from "./components/ui";
+import { CartDrawer } from "./components/CartDrawer";
 import { Home } from "./pages/Home";
 import { Shop } from "./pages/Shop";
 import { ProductPage } from "./pages/ProductPage";
@@ -37,6 +38,7 @@ function Shell() {
         )}
       </main>
       <Footer />
+      <CartDrawer />
       <Toasts />
     </div>
   );

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "../utils/cn";
 import { useApp } from "../lib/store";
 import { COUPONS, FREE_SHIP, GOVERNORATES, SHIP_FEE, getCoupon, getProduct, money, setCoupon } from "../lib/products";
@@ -61,12 +61,25 @@ export function CheckoutPage() {
     );
   }
 
+  useEffect(() => {
+    if (user) {
+      setF((prev) => ({
+        ...prev,
+        name: prev.name || user.name,
+        email: prev.email || user.email,
+      }));
+    }
+  }, [user]);
+
   const validate = (s: number): boolean => {
     const e: Record<string, string> = {};
     if (s === 0) {
-      // Guest checkout: only the contact number is required.
-      if (!/^01[0125][0-9]{8}$/.test(f.phone.trim())) e.phone = t("err.phone");
-      if (f.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.trim())) e.email = t("err.email");
+      if (f.name.trim().length < 2) e.name = lang === "ar" ? "يرجى كتابة اسم المستلم بالكامل" : "Recipient name required";
+      // Guest checkout: flexible phone validation (handles spaces, dashes, +20 prefix)
+      const cleanPhone = f.phone.replace(/[\s\-\(\)]/g, "").replace(/^(\+20|0020)/, "");
+      const finalPhone = cleanPhone.startsWith("0") ? cleanPhone : `0${cleanPhone}`;
+      if (!/^01[0125][0-9]{8}$/.test(finalPhone)) e.phone = t("err.phone");
+      if (user && f.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.trim())) e.email = t("err.email");
     }
     if (s === 1) {
       if (!f.gov) e.gov = t("err.gov");
@@ -164,13 +177,31 @@ export function CheckoutPage() {
         <div className="flex flex-wrap items-center gap-4">
           <h1 className="font-display text-5xl font-medium">{t("co.title")}</h1>
           {!user && (
-            <span className="inline-flex items-center gap-2 rounded-full bg-wine-100 border border-wine-200 px-3.5 py-1.5 text-[0.68rem] font-medium uppercase tracking-[0.14em] text-wine-900">
-              <IcShield className="h-3.5 w-3.5" /> {t("co.guestBadge")}
+            <span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 border border-emerald-200 px-3.5 py-1.5 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-emerald-950">
+              <span className="h-2 w-2 rounded-full bg-emerald-600 animate-pulse" />
+              {lang === "ar" ? "شراء سريع كزائر — بيانات التوصيل فقط" : "Guest Checkout — Delivery Info Only"}
             </span>
           )}
         </div>
         {!user && (
-          <p className="mt-3 max-w-2xl text-sm text-mute leading-relaxed">{t("co.guestNote")}</p>
+          <div className="mt-4 rounded-sm border border-emerald-600/30 bg-emerald-50/70 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-700 text-cream text-sm">
+                <IcShield className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="font-semibold text-sm text-emerald-950">
+                  {lang === "ar" ? "إتمام الشراء السريع كزائر — لا يتطلب حساب أو كلمة مرور" : "Fast Guest Checkout — No Account or Password Needed"}
+                </p>
+                <p className="text-xs text-emerald-900/80">
+                  {lang === "ar" ? "كل ما نطلبه منك هو بيانات استلام الشحنة فقط (الاسم، رقم الهاتف، وعنوان التوصيل)." : "We only ask for delivery details to get your order safely to your door."}
+                </p>
+              </div>
+            </div>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-200/80 px-3 py-1 text-[0.7rem] font-bold text-emerald-950 shrink-0">
+              ✓ {lang === "ar" ? "بدون تسجيل حساب" : "No Sign-up"}
+            </span>
+          </div>
         )}
 
         {/* stepper */}
@@ -203,11 +234,17 @@ export function CheckoutPage() {
             {/* ============ STEP 1: customer (guest-first) ============ */}
             {step === 0 && (
               <div className="anim-fade-up space-y-5">
-                <h2 className="font-display text-3xl">{t("co.step1")}</h2>
-                <p className="-mt-2 text-sm text-mute">{t("co.guestNote")}</p>
-                {field("phone", t("co.phone"), { placeholder: "01012345678", type: "tel" })}
-                {field("name", t("co.fullName"), { placeholder: lang === "ar" ? "محمد أحمد" : "Mohamed Ahmed", optional: true })}
-                {field("email", t("co.email"), { placeholder: "you@example.com", optional: true, type: "email" })}
+                <h2 className="font-display text-3xl">
+                  {lang === "ar" ? "بيانات المستلم (الرقم والعنوان فقط)" : t("co.step1")}
+                </h2>
+                <p className="-mt-2 text-sm text-mute">
+                  {lang === "ar"
+                    ? "إتمام سريع كزائر: مطلوب الاسم ورقم الهاتف فقط لتسليم الشحنة والتواصل فور وصول المندوب، بدون بريد إلكتروني أو إنشاء حساب."
+                    : "Fast guest checkout: only name and mobile phone required to deliver your order safely, no email or password needed."}
+                </p>
+                {field("name", lang === "ar" ? "اسم المستلم بالكامل" : t("co.fullName"), { placeholder: lang === "ar" ? "الاسم ثلاثي لتسليم الشحنة" : "Recipient full name" })}
+                {field("phone", lang === "ar" ? "رقم الهاتف المحمول (للتواصل أثناء التوصيل)" : t("co.phone"), { placeholder: "01012345678", type: "tel" })}
+                {user && field("email", t("co.email"), { placeholder: "you@example.com", type: "email" })}
               </div>
             )}
 
@@ -359,14 +396,18 @@ export function CheckoutPage() {
                 <div className="border border-ink/15 divide-y divide-ink/10">
                   {items.map(({ ci, p, c }) => (
                     <div key={`${ci.id}-${ci.colorId}-${ci.size}`} className="flex items-center gap-3 p-3">
-                      <div className="w-12 shrink-0 bg-cream-2 overflow-hidden">
-                        <Garment type={p.type} color={c.hex} view="front" label="" className="aspect-[4/5] w-full" />
+                      <div className="w-12 h-14 shrink-0 bg-cream-2 overflow-hidden rounded-xs border border-ink/10 relative">
+                        {c.image || p.image ? (
+                          <img src={c.image || p.image} alt={p.name[lang]} className="h-full w-full object-cover object-center" loading="lazy" />
+                        ) : (
+                          <Garment type={p.type} color={c.hex} view="front" label="" className="aspect-[4/5] w-full" />
+                        )}
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{p.name[lang]}</p>
                         <p className="text-xs text-mute">{c.name[lang]} · {ci.size} · ×{ci.qty}</p>
                       </div>
-                      <p className="text-sm tabular-nums">{money(p.price * ci.qty, lang)}</p>
+                      <p className="text-sm tabular-nums font-medium">{money(p.price * ci.qty, lang)}</p>
                     </div>
                   ))}
                 </div>
@@ -383,11 +424,12 @@ export function CheckoutPage() {
                 <Btn variant="ghost" onClick={() => navigate("/cart")}>{t("cart.continue")}</Btn>
               )}
               {step < 3 ? (
-                <Btn onClick={next}>{t("co.continue")} <IcArrow className="h-4 w-4" /></Btn>
+                <Btn onClick={next} data-testid="co-continue-btn">{t("co.continue")} <IcArrow className="h-4 w-4" /></Btn>
               ) : (
                 <Btn
                   onClick={finish}
                   disabled={pay === "processing"}
+                  data-testid="co-finish-btn"
                   className={cn("min-w-56", pay === "processing" && "shimmer")}
                 >
                   {pay === "processing" ? t("co.placing") : f.method === "card" ? t("co.pay", { n: total.toLocaleString("en-US") }) : t("co.placeOrder")}
@@ -403,11 +445,15 @@ export function CheckoutPage() {
               <div className="mt-4 max-h-64 space-y-3 overflow-y-auto pe-1">
                 {items.map(({ ci, p, c }) => (
                   <div key={`${ci.id}-${ci.colorId}-${ci.size}`} className="flex items-center gap-3">
-                    <div className="w-10 shrink-0 bg-cream-2 overflow-hidden border border-ink/10">
-                      <Garment type={p.type} color={c.hex} view="front" label="" className="aspect-[4/5] w-full" />
+                    <div className="w-10 h-12 shrink-0 bg-cream-2 overflow-hidden rounded-xs border border-ink/10 relative">
+                      {c.image || p.image ? (
+                        <img src={c.image || p.image} alt={p.name[lang]} className="h-full w-full object-cover object-center" loading="lazy" />
+                      ) : (
+                        <Garment type={p.type} color={c.hex} view="front" label="" className="aspect-[4/5] w-full" />
+                      )}
                     </div>
                     <p className="min-w-0 flex-1 truncate text-sm">{p.name[lang]} <span className="text-mute">×{ci.qty}</span></p>
-                    <p className="text-sm tabular-nums">{money(p.price * ci.qty, lang)}</p>
+                    <p className="text-sm tabular-nums font-medium">{money(p.price * ci.qty, lang)}</p>
                   </div>
                 ))}
               </div>

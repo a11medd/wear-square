@@ -72,8 +72,12 @@ export function CartPage() {
           <div className="divide-y divide-ink/10 border-y border-ink/10">
             {items.map(({ ci, idx, p, c }) => (
               <div key={`${ci.id}-${ci.colorId}-${ci.size}`} className="flex gap-4 py-6">
-                <a href={`#/product/${p.id}`} className="block w-24 sm:w-28 shrink-0 overflow-hidden bg-cream-2">
-                  <Garment type={p.type} color={c.hex} view="front" label={p.name[lang]} className="aspect-[4/5] w-full" />
+                <a href={`#/product/${p.id}`} className="block w-24 sm:w-28 shrink-0 overflow-hidden bg-cream-2 rounded-sm border border-ink/10 aspect-[4/5] relative">
+                  {c.image || p.image ? (
+                    <img src={c.image || p.image} alt={p.name[lang]} className="absolute inset-0 h-full w-full object-cover object-center" />
+                  ) : (
+                    <Garment type={p.type} color={c.hex} view="front" label={p.name[lang]} className="aspect-[4/5] w-full" />
+                  )}
                 </a>
                 <div className="flex flex-1 flex-col justify-between gap-3 min-w-0">
                   <div className="flex items-start justify-between gap-3">
@@ -88,7 +92,8 @@ export function CartPage() {
                   <div className="flex items-center justify-between gap-3">
                     <div className="inline-flex items-center border border-ink/20">
                       <button
-                        aria-label="−"
+                        type="button"
+                        aria-label={t("cart.decrease")}
                         onClick={() => (ci.qty <= 1 ? removeItem(idx) : setQty(idx, ci.qty - 1))}
                         className="grid h-9 w-9 place-items-center hover:bg-cream-2 transition-colors"
                       >
@@ -96,7 +101,8 @@ export function CartPage() {
                       </button>
                       <span className="w-9 text-center text-sm tabular-nums" aria-live="polite">{ci.qty}</span>
                       <button
-                        aria-label="+"
+                        type="button"
+                        aria-label={t("cart.increase")}
                         onClick={() => setQty(idx, ci.qty + 1)}
                         disabled={ci.qty >= 9}
                         className="grid h-9 w-9 place-items-center hover:bg-cream-2 transition-colors disabled:opacity-30"
@@ -195,12 +201,70 @@ export function CartPage() {
                 </div>
               </dl>
 
-              <Btn className="mt-6 w-full py-4" onClick={() => navigate("/checkout")}>
-                {t("cart.checkout")} <IcArrow className="h-4 w-4" />
-              </Btn>
-              <p className="mt-3 text-center text-[0.68rem] text-mute">
-                {user ? `— ${user.name} —` : t("common.guest")}
-              </p>
+              {user ? (
+                <div className="mt-6 space-y-3">
+                  <Btn
+                    className="w-full py-4 uppercase tracking-wider font-semibold text-sm flex items-center justify-center gap-2"
+                    onClick={() => navigate("/checkout")}
+                    data-testid="checkout-btn"
+                  >
+                    {t("cart.checkout")} <IcArrow className="h-4 w-4 rtl:rotate-180" />
+                  </Btn>
+                  <p className="text-center text-xs text-mute">
+                    {t("acc.welcome")}, {user.name}
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-6 space-y-3">
+                  {/* Two Buttons: Guest Checkout & Create Account */}
+                  {/* Button 1: Guest Checkout */}
+                  <div className="rounded-sm border-2 border-wine-800/80 bg-wine-50/60 p-3.5 text-center">
+                    <div className="flex items-center justify-center gap-1.5 mb-1.5">
+                      <span className="h-2 w-2 rounded-full bg-emerald-600 animate-pulse" />
+                      <span className="text-[0.72rem] font-bold uppercase tracking-wider text-wine-950">
+                        {lang === "ar" ? "الخيار الأسرع · بدون حساب" : "Fastest Option · No Account"}
+                      </span>
+                    </div>
+                    <Btn
+                      className="w-full py-3.5 text-sm font-bold uppercase tracking-wide bg-wine-800 hover:bg-wine-900 text-cream shadow-sm flex items-center justify-center gap-2"
+                      onClick={() => navigate("/checkout")}
+                      data-testid="checkout-guest-btn"
+                    >
+                      {lang === "ar" ? "إتمام الشراء كزائر (الرقم والعنوان فقط)" : "Checkout as Guest (Phone & Delivery)"}
+                      <IcArrow className="h-4 w-4 rtl:rotate-180" />
+                    </Btn>
+                    <p className="mt-2 text-xs text-emerald-900 font-medium">
+                      {lang === "ar"
+                        ? "✓ بيانات التوصيل فقط (الاسم، الرقم، العنوان) بدون تسجيل"
+                        : "✓ Delivery details only (name, phone, address) without signup"}
+                    </p>
+                  </div>
+
+                  {/* Button 2: Create Account / Sign in to complete purchase */}
+                  <div className="rounded-sm border border-ink/15 bg-cream p-3.5 text-center space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => navigate("/account?tab=register&redirect=checkout")}
+                      className="w-full py-3 px-3 rounded-sm border border-wine-800/50 bg-cream-2/70 hover:bg-cream-3 text-wine-950 font-semibold text-xs sm:text-sm tracking-wide transition-colors flex items-center justify-center gap-1.5"
+                      data-testid="checkout-register-btn"
+                    >
+                      <span>{lang === "ar" ? "إنشاء حساب لإتمام الشراء" : "Create Account to Checkout"}</span>
+                      <IcArrow className="h-3.5 w-3.5 rtl:rotate-180" />
+                    </button>
+                    <p className="text-[0.7rem] text-mute">
+                      {lang === "ar"
+                        ? "لديك حساب بالفعل؟ "
+                        : "Already have an account? "}
+                      <a
+                        href="#/account?tab=login&redirect=checkout"
+                        className="font-semibold text-wine-800 hover:underline"
+                      >
+                        {lang === "ar" ? "تسجيل الدخول" : "Sign in"}
+                      </a>
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </aside>
         </div>

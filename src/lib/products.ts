@@ -12,6 +12,8 @@ export interface ColorVariant {
   hex: string;
   family: string;
   stock: Record<string, number>; // size -> qty
+  image?: string;
+  gallery?: string[];
 }
 
 export interface Product {
@@ -30,6 +32,8 @@ export interface Product {
   bestseller?: boolean;
   newArrival?: boolean;
   keywords: { en: string; ar: string };
+  image: string;
+  gallery?: string[];
 }
 
 export const SIZES = ["S", "M", "L", "XL"];
@@ -75,12 +79,14 @@ const C = {
 };
 
 type CKey = keyof typeof C;
-const cv = (k: CKey, id: string, stock: Record<string, number>): ColorVariant => ({
+const cv = (k: CKey, id: string, stock: Record<string, number>, image?: string, gallery?: string[]): ColorVariant => ({
   id,
   name: { en: C[k].en, ar: C[k].ar },
   hex: C[k].hex,
   family: C[k].family,
   stock,
+  image,
+  gallery,
 });
 
 const st = (s = 8, m = 12, l = 6, xl = 0) => ({ S: s, M: m, L: l, XL: xl });
@@ -156,14 +162,20 @@ export const PRODUCTS: Product[] = [
     fabric: F.tee, care: careWash,
     price: 449,
     colors: [
-      cv("black", "mtee-black", st(10, 14, 8, 4)),
-      cv("white", "mtee-white", st(6, 10, 8, 0)),
-      cv("beige", "mtee-beige", st(4, 8, 6, 6)),
+      cv("black", "mtee-black", st(10, 14, 8, 4), "/products/tee-black.jpg", ["/products/tee-black.jpg"]),
+      cv("white", "mtee-white", st(6, 10, 8, 0), "/products/tee-white.jpg", ["/products/tee-white.jpg"]),
+      cv("beige", "mtee-beige", st(4, 8, 6, 6), "/products/tee-beige.jpg", ["/products/tee-beige.jpg"]),
     ],
     sizes: SIZES,
     featured: true,
     bestseller: true,
     keywords: { en: "tshirt tee top cotton basic casual", ar: "تيشيرت توب قطن أساسي كاجوال" },
+    image: "/products/tee-black.jpg",
+    gallery: [
+      "/products/tee-black.jpg",
+      "/products/tee-white.jpg",
+      "/products/tee-beige.jpg",
+    ],
   },
   {
     id: "m-shirt-oxford",
@@ -177,13 +189,18 @@ export const PRODUCTS: Product[] = [
     fabric: F.shirt, care: careWash,
     price: 749,
     colors: [
-      cv("white", "msh-white", st(8, 10, 8, 6)),
-      cv("sky", "msh-sky", st(6, 8, 6, 0)),
+      cv("white", "msh-white", st(8, 10, 8, 6), "/products/shirt-white.jpg", ["/products/shirt-white.jpg"]),
+      cv("sky", "msh-sky", st(6, 8, 6, 0), "/products/shirt-sky.jpg", ["/products/shirt-sky.jpg"]),
     ],
     sizes: SIZES,
     featured: true,
     newArrival: true,
     keywords: { en: "shirt oxford office formal button", ar: "قميص أوكسفورد رسمي أزرار" },
+    image: "/products/shirt-white.jpg",
+    gallery: [
+      "/products/shirt-white.jpg",
+      "/products/shirt-sky.jpg",
+    ],
   },
   {
     id: "m-jeans-straight",
@@ -198,12 +215,17 @@ export const PRODUCTS: Product[] = [
     price: 899,
     oldPrice: 1099,
     colors: [
-      cv("indigo", "mj-indigo", st(10, 12, 8, 6)),
-      cv("navy", "mj-navy", st(6, 8, 4, 0)),
+      cv("indigo", "mj-indigo", st(10, 12, 8, 6), "/products/jeans-indigo.jpg", ["/products/jeans-indigo.jpg"]),
+      cv("navy", "mj-navy", st(6, 8, 4, 0), "/products/jeans-navy.jpg", ["/products/jeans-navy.jpg"]),
     ],
     sizes: SIZES,
     bestseller: true,
     keywords: { en: "jeans denim straight pants", ar: "جينز دنيم بنطال مستقيم" },
+    image: "/products/jeans-indigo.jpg",
+    gallery: [
+      "/products/jeans-indigo.jpg",
+      "/products/jeans-navy.jpg",
+    ],
   },
   {
     id: "m-trousers-chino",
@@ -217,12 +239,17 @@ export const PRODUCTS: Product[] = [
     fabric: F.trousers, care: careWash,
     price: 699,
     colors: [
-      cv("beige", "mc-beige", st(8, 10, 6, 4)),
-      cv("navy", "mc-navy", st(4, 6, 6, 0)),
+      cv("beige", "mc-beige", st(8, 10, 6, 4), "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=900&q=80", ["https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=900&q=80"]),
+      cv("navy", "mc-navy", st(4, 6, 6, 0), "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=900&q=80", ["https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=900&q=80"]),
     ],
     sizes: SIZES,
     newArrival: true,
     keywords: { en: "chinos trousers pants work", ar: "تشينو بنطال عمل" },
+    image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=900&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=900&q=80",
+    ],
   },
   {
     id: "m-hoodie-essential",
@@ -237,12 +264,17 @@ export const PRODUCTS: Product[] = [
     price: 799,
     oldPrice: 949,
     colors: [
-      cv("charcoal", "mh-char", st(12, 10, 8, 6)),
-      cv("forest", "mh-forest", st(6, 8, 4, 0)),
+      cv("charcoal", "mh-char", st(12, 10, 8, 6), "/products/hoodie-charcoal.jpg", ["/products/hoodie-charcoal.jpg"]),
+      cv("forest", "mh-forest", st(6, 8, 4, 0), "/products/hoodie-forest.jpg", ["/products/hoodie-forest.jpg"]),
     ],
     sizes: SIZES,
     bestseller: true,
     keywords: { en: "hoodie sweatshirt fleece winter cozy", ar: "هودي سويت شيرت شتوي دافئ" },
+    image: "/products/hoodie-charcoal.jpg",
+    gallery: [
+      "/products/hoodie-charcoal.jpg",
+      "/products/hoodie-forest.jpg",
+    ],
   },
   {
     id: "m-jacket-overshirt",
@@ -256,11 +288,16 @@ export const PRODUCTS: Product[] = [
     fabric: F.jacket, care: careWash,
     price: 1199,
     colors: [
-      cv("oliveDeep", "mo-olive", zero()),
-      cv("charcoal", "mo-char", zero()),
+      cv("oliveDeep", "mo-olive", zero(), "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=900&q=80", ["https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=900&q=80"]),
+      cv("charcoal", "mo-char", zero(), "https://images.unsplash.com/photo-1548883354-7622d03aca27?auto=format&fit=crop&w=900&q=80", ["https://images.unsplash.com/photo-1548883354-7622d03aca27?auto=format&fit=crop&w=900&q=80"]),
     ],
     sizes: SIZES,
     keywords: { en: "jacket overshirt flannel outerwear", ar: "جاكيت ملابس خارجية" },
+    image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=900&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1548883354-7622d03aca27?auto=format&fit=crop&w=900&q=80",
+    ],
   },
 
   // ---------------- WOMEN ----------------
@@ -276,12 +313,17 @@ export const PRODUCTS: Product[] = [
     fabric: F.tee, care: careWash,
     price: 399,
     colors: [
-      cv("white", "wtee-white", st(10, 12, 10, 6)),
-      cv("black", "wtee-black", st(8, 10, 6, 0)),
+      cv("white", "wtee-white", st(10, 12, 10, 6), "/products/tee-white.jpg", ["/products/tee-white.jpg"]),
+      cv("black", "wtee-black", st(8, 10, 6, 0), "/products/tee-black.jpg", ["/products/tee-black.jpg"]),
     ],
     sizes: SIZES,
     bestseller: true,
     keywords: { en: "tshirt tee top basic", ar: "تيشيرت توب أساسي" },
+    image: "/products/tee-white.jpg",
+    gallery: [
+      "/products/tee-white.jpg",
+      "/products/tee-black.jpg",
+    ],
   },
   {
     id: "w-dress-wrap",
@@ -295,13 +337,19 @@ export const PRODUCTS: Product[] = [
     fabric: F.dress, care: careWash,
     price: 949,
     colors: [
-      cv("terracotta", "wd-terra", st(6, 8, 6, 4)),
-      cv("black", "wd-black", st(8, 6, 4, 0)),
-      cv("rust", "wd-rust", zero()),
+      cv("terracotta", "wd-terra", st(6, 8, 6, 4), "/products/dress-terracotta.jpg", ["/products/dress-terracotta.jpg"]),
+      cv("black", "wd-black", st(8, 6, 4, 0), "/products/dress-black.jpg", ["/products/dress-black.jpg"]),
+      cv("rust", "wd-rust", zero(), "/products/dress-rust.jpg", ["/products/dress-rust.jpg"]),
     ],
     sizes: SIZES,
     featured: true,
     keywords: { en: "dress midi wrap occasion office", ar: "فستان ميدي سهرة عمل" },
+    image: "/products/dress-terracotta.jpg",
+    gallery: [
+      "/products/dress-terracotta.jpg",
+      "/products/dress-black.jpg",
+      "/products/dress-rust.jpg",
+    ],
   },
   {
     id: "w-trousers-wide",
@@ -315,13 +363,18 @@ export const PRODUCTS: Product[] = [
     fabric: F.trousers, care: careWash,
     price: 849,
     colors: [
-      cv("black", "wt-black", st(10, 12, 8, 8)),
-      cv("cream", "wt-cream", st(4, 6, 6, 0)),
+      cv("black", "wt-black", st(10, 12, 8, 8), "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=80", ["https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=80"]),
+      cv("cream", "wt-cream", st(4, 6, 6, 0), "https://images.unsplash.com/photo-1584370848010-d7fe6bc767ec?auto=format&fit=crop&w=900&q=80", ["https://images.unsplash.com/photo-1584370848010-d7fe6bc767ec?auto=format&fit=crop&w=900&q=80"]),
     ],
     sizes: SIZES,
     featured: true,
     newArrival: true,
     keywords: { en: "trousers pants wide office elegant", ar: "بنطال واسع أنيق عمل" },
+    image: "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1584370848010-d7fe6bc767ec?auto=format&fit=crop&w=900&q=80",
+    ],
   },
   {
     id: "w-sweater-knit",
@@ -336,12 +389,17 @@ export const PRODUCTS: Product[] = [
     price: 899,
     oldPrice: 1099,
     colors: [
-      cv("cream", "ws-cream", st(8, 10, 6, 4)),
-      cv("forest", "ws-forest", st(4, 6, 4, 0)),
+      cv("cream", "ws-cream", st(8, 10, 6, 4), "/products/sweater-cream.jpg", ["/products/sweater-cream.jpg"]),
+      cv("forest", "ws-forest", st(4, 6, 4, 0), "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=900&q=80", ["https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=900&q=80"]),
     ],
     sizes: SIZES,
     bestseller: true,
     keywords: { en: "sweater knit wool winter cardigan", ar: "سترة تريكو شتوية صوف" },
+    image: "/products/sweater-cream.jpg",
+    gallery: [
+      "/products/sweater-cream.jpg",
+      "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=900&q=80",
+    ],
   },
   {
     id: "w-skirt-midi",
@@ -355,12 +413,17 @@ export const PRODUCTS: Product[] = [
     fabric: F.skirt, care: careWash,
     price: 599,
     colors: [
-      cv("olive", "wk-olive", st(8, 10, 8, 4)),
-      cv("black", "wk-black", st(6, 6, 4, 0)),
+      cv("olive", "wk-olive", st(8, 10, 8, 4), "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?auto=format&fit=crop&w=900&q=80", ["https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?auto=format&fit=crop&w=900&q=80"]),
+      cv("black", "wk-black", st(6, 6, 4, 0), "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=900&q=80", ["https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=900&q=80"]),
     ],
     sizes: SIZES,
     newArrival: true,
     keywords: { en: "skirt midi pleated office", ar: "تنورة ميدي عمل" },
+    image: "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?auto=format&fit=crop&w=900&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=900&q=80",
+    ],
   },
   {
     id: "w-shirt-linen",
@@ -375,12 +438,17 @@ export const PRODUCTS: Product[] = [
     care: careWash,
     price: 699,
     colors: [
-      cv("cream", "wls-cream", st(10, 8, 6, 4)),
-      cv("steel", "wls-steel", st(4, 6, 6, 0)),
+      cv("cream", "wls-cream", st(10, 8, 6, 4), "https://images.unsplash.com/photo-1598554747436-c9293d6a588f?auto=format&fit=crop&w=900&q=80", ["https://images.unsplash.com/photo-1598554747436-c9293d6a588f?auto=format&fit=crop&w=900&q=80"]),
+      cv("steel", "wls-steel", st(4, 6, 6, 0), "/products/shirt-sky.jpg", ["/products/shirt-sky.jpg"]),
     ],
     sizes: SIZES,
     featured: true,
     keywords: { en: "linen shirt summer casual blouse", ar: "قميص كتان صيفي كاجوال" },
+    image: "https://images.unsplash.com/photo-1598554747436-c9293d6a588f?auto=format&fit=crop&w=900&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1598554747436-c9293d6a588f?auto=format&fit=crop&w=900&q=80",
+      "/products/shirt-sky.jpg",
+    ],
   },
 
   // ---------------- KIDS ----------------
@@ -396,14 +464,20 @@ export const PRODUCTS: Product[] = [
     fabric: F.tee, care: careWash,
     price: 249,
     colors: [
-      cv("teal", "kt-teal", st(12, 14, 10, 6)),
-      cv("navy", "kt-navy", st(10, 12, 8, 8)),
-      cv("sunYellow", "kt-yellow", st(6, 8, 8, 4)),
+      cv("teal", "kt-teal", st(12, 14, 10, 6), "/products/shirt-sky.jpg", ["/products/shirt-sky.jpg"]),
+      cv("navy", "kt-navy", st(10, 12, 8, 8), "/products/tee-black.jpg", ["/products/tee-black.jpg"]),
+      cv("sunYellow", "kt-yellow", st(6, 8, 8, 4), "/products/tee-beige.jpg", ["/products/tee-beige.jpg"]),
     ],
     sizes: SIZES,
     bestseller: true,
     newArrival: true,
     keywords: { en: "kids tshirt tee boy girl cotton", ar: "تيشيرت أطفال قطن بنات ولاد" },
+    image: "/products/shirt-sky.jpg",
+    gallery: [
+      "/products/shirt-sky.jpg",
+      "/products/tee-black.jpg",
+      "/products/tee-beige.jpg",
+    ],
   },
   {
     id: "k-jeans-comfy",
@@ -417,11 +491,16 @@ export const PRODUCTS: Product[] = [
     fabric: F.jeans, care: careDenim,
     price: 449,
     colors: [
-      cv("lightBlue", "kj-blue", st(10, 12, 10, 6)),
-      cv("stone", "kj-stone", st(4, 0, 0, 0)),
+      cv("lightBlue", "kj-blue", st(10, 12, 10, 6), "/products/jeans-indigo.jpg", ["/products/jeans-indigo.jpg"]),
+      cv("stone", "kj-stone", st(4, 0, 0, 0), "/products/jeans-navy.jpg", ["/products/jeans-navy.jpg"]),
     ],
     sizes: SIZES,
     keywords: { en: "kids jeans denim pants stretch", ar: "جينز أطفال بنطال مرن" },
+    image: "/products/jeans-indigo.jpg",
+    gallery: [
+      "/products/jeans-indigo.jpg",
+      "/products/jeans-navy.jpg",
+    ],
   },
   {
     id: "k-hoodie-cozy",
@@ -436,12 +515,17 @@ export const PRODUCTS: Product[] = [
     price: 499,
     oldPrice: 599,
     colors: [
-      cv("mustard", "kh-mustard", st(8, 10, 8, 6)),
-      cv("graphite", "kh-graphite", st(6, 8, 6, 0)),
+      cv("mustard", "kh-mustard", st(8, 10, 8, 6), "/products/hoodie-forest.jpg", ["/products/hoodie-forest.jpg"]),
+      cv("graphite", "kh-graphite", st(6, 8, 6, 0), "/products/hoodie-charcoal.jpg", ["/products/hoodie-charcoal.jpg"]),
     ],
     sizes: SIZES,
     bestseller: true,
     keywords: { en: "kids hoodie sweater fleece school", ar: "هودي أطفال شتوي مدرسة" },
+    image: "/products/hoodie-forest.jpg",
+    gallery: [
+      "/products/hoodie-forest.jpg",
+      "/products/hoodie-charcoal.jpg",
+    ],
   },
   {
     id: "k-dress-play",
@@ -455,12 +539,17 @@ export const PRODUCTS: Product[] = [
     fabric: F.dress, care: careWash,
     price: 399,
     colors: [
-      cv("dustyPink", "kd-pink", st(8, 10, 8, 4)),
-      cv("black", "kd-black", st(4, 6, 4, 0)),
+      cv("dustyPink", "kd-pink", st(8, 10, 8, 4), "/products/dress-rust.jpg", ["/products/dress-rust.jpg"]),
+      cv("black", "kd-black", st(4, 6, 4, 0), "/products/dress-black.jpg", ["/products/dress-black.jpg"]),
     ],
     sizes: SIZES,
     newArrival: true,
     keywords: { en: "kids dress girl party summer", ar: "فستان بنات حفلة صيف" },
+    image: "/products/dress-rust.jpg",
+    gallery: [
+      "/products/dress-rust.jpg",
+      "/products/dress-black.jpg",
+    ],
   },
   {
     id: "k-shorts-everyday",
@@ -474,18 +563,31 @@ export const PRODUCTS: Product[] = [
     fabric: F.shorts, care: careWash,
     price: 299,
     colors: [
-      cv("khaki", "ks-khaki", st(10, 12, 10, 6)),
-      cv("navy", "ks-navy", st(6, 8, 6, 0)),
+      cv("khaki", "ks-khaki", st(10, 12, 10, 6), "/products/tee-beige.jpg", ["/products/tee-beige.jpg"]),
+      cv("navy", "ks-navy", st(6, 8, 6, 0), "/products/jeans-navy.jpg", ["/products/jeans-navy.jpg"]),
     ],
     sizes: SIZES,
     newArrival: true,
     keywords: { en: "kids shorts summer boy", ar: "شورت أطفال صيف" },
+    image: "/products/tee-beige.jpg",
+    gallery: [
+      "/products/tee-beige.jpg",
+      "/products/jeans-navy.jpg",
+    ],
   },
 ];
 
 // ---------- helpers ----------
 
 export const getProduct = (id: string) => PRODUCTS.find((p) => p.id === id);
+
+export const getProductImageForColor = (p: Product, colorId?: string): string => {
+  if (colorId) {
+    const c = p.colors.find((x) => x.id === colorId);
+    if (c?.image) return c.image;
+  }
+  return p.image;
+};
 
 export const colorInStock = (c: ColorVariant) =>
   Object.values(c.stock).reduce((a, b) => a + b, 0) > 0;

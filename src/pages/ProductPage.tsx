@@ -5,6 +5,7 @@ import {
   colorInStock, discountPct, getProduct, money, productInStock, related, type View,
 } from "../lib/products";
 import { Garment } from "../components/Garment";
+import { Garment3D } from "../components/Garment3D";
 import { ProductCard } from "../components/ProductCard";
 import { Btn, Reveal, IcCheck, IcRuler, IcTruck, IcSwap, IcArrow, Modal, SizeGuideTable } from "../components/ui";
 
@@ -20,6 +21,7 @@ export function ProductPage({ id }: { id: string }) {
   const [err, setErr] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
   const [guide, setGuide] = useState(false);
+  const [is3D, setIs3D] = useState(false);
   const galRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -67,7 +69,19 @@ export function ProductPage({ id }: { id: string }) {
     setColorId(cid);
     setSize(null);
     setErr(null);
+    setViewIdx(0);
+    if (galRef.current) {
+      galRef.current.scrollTo({ left: 0, behavior: "smooth" });
+    }
   };
+
+  const activeImages = useMemo(() => {
+    if (color?.gallery && color.gallery.length > 0) return color.gallery;
+    if (color?.image) return [color.image];
+    if (p.gallery && p.gallery.length > 0) return p.gallery;
+    if (p.image) return [p.image];
+    return [];
+  }, [color, p]);
 
   const onAdd = () => {
     if (!inStock) return;
@@ -93,56 +107,116 @@ export function ProductPage({ id }: { id: string }) {
         </nav>
 
         <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-14">
-          {/* ============ gallery (swipeable) ============ */}
+          {/* ============ gallery (swipeable or 3D) ============ */}
           <div className="lg:sticky lg:top-28 self-start">
-            <div className="relative overflow-hidden bg-cream-2">
-              <div
-                ref={galRef}
-                onScroll={onGalScroll}
-                className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto"
-                aria-label={p.name[lang]}
-              >
-                {VIEWS.map((v) => (
-                  <div key={v} className="w-full shrink-0 snap-center">
-                    {color && (
-                      <Garment
-                        type={p.type}
-                        color={color.hex}
-                        view={v}
-                        label={`${p.name[lang]} — ${color.name[lang]} — ${t(`p.gallery.${v}`)}`}
-                        className="aspect-[4/5] h-auto w-full"
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-              <div className="pointer-events-none absolute top-4 start-4 flex flex-col gap-1.5">
-                {pct > 0 && <span className="bg-wine-800 text-cream text-[0.62rem] font-semibold uppercase tracking-[0.18em] px-2.5 py-1">{t("common.off", { n: pct })}</span>}
-                {p.newArrival && <span className="bg-ink/85 text-cream text-[0.62rem] uppercase tracking-[0.18em] px-2.5 py-1">{t("p.newBadge")}</span>}
-                {p.bestseller && <span className="bg-cream/90 text-ink border border-ink/10 text-[0.62rem] uppercase tracking-[0.18em] px-2.5 py-1">{t("p.bestBadge")}</span>}
-              </div>
-              {/* view dots */}
-              <div className="absolute bottom-3 inset-x-0 flex justify-center gap-1.5">
-                {VIEWS.map((v, i) => (
-                  <span key={v} className={cn("h-1.5 rounded-full transition-all duration-300", viewIdx === i ? "w-5 bg-wine-800" : "w-1.5 bg-ink/25")} aria-hidden="true" />
-                ))}
-              </div>
-            </div>
-            <div className="mt-3 grid grid-cols-3 gap-3">
-              {VIEWS.map((v, i) => (
+            {/* 2D vs 3D switcher */}
+            <div className="mb-3 flex items-center justify-between">
+              <div className="inline-flex rounded-full border border-ink/15 bg-cream-2/70 p-1">
                 <button
-                  key={v}
-                  onClick={() => jumpTo(i)}
-                  aria-label={t(`p.gallery.${v}`)}
-                  aria-pressed={viewIdx === i}
+                  type="button"
+                  onClick={() => setIs3D(false)}
                   className={cn(
-                    "overflow-hidden border transition-all",
-                    viewIdx === i ? "border-wine-800 ring-1 ring-wine-800" : "border-ink/10 opacity-70 hover:opacity-100"
+                    "rounded-full px-3.5 py-1 text-xs font-medium transition-colors",
+                    !is3D ? "bg-wine-900 text-cream shadow-xs" : "text-ink/75 hover:text-ink"
                   )}
                 >
-                  <Garment type={p.type} color={color?.hex ?? "#ccc"} view={v} label="" className="aspect-[4/5] w-full" />
+                  {t("p.view2d")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIs3D(true)}
+                  className={cn(
+                    "rounded-full px-3.5 py-1 text-xs font-medium transition-colors flex items-center gap-1.5",
+                    is3D ? "bg-wine-900 text-cream shadow-xs" : "text-ink/75 hover:text-ink"
+                  )}
+                  data-testid="toggle-3d-btn"
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+                  {t("p.view3d")}
+                </button>
+              </div>
+            </div>
+
+            <div className="relative overflow-hidden bg-cream-2 rounded-sm border border-ink/10 aspect-[4/5]">
+              {is3D ? (
+                <Garment3D type={p.type} color={color?.hex ?? "#333"} className="h-full w-full" />
+              ) : (
+                <>
+                  <div
+                    ref={galRef}
+                    onScroll={onGalScroll}
+                    className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto absolute inset-0"
+                    aria-label={p.name[lang]}
+                  >
+                    {activeImages.map((imgSrc, i) => (
+                      <div key={i} className="w-full shrink-0 snap-center h-full relative group/img overflow-hidden">
+                        <img
+                          src={imgSrc}
+                          alt={`${p.name[lang]} — ${color?.name[lang] || ""}`}
+                          className="h-full w-full object-cover object-center transition-transform duration-700 hover:scale-105"
+                          loading={i === 0 ? "eager" : "lazy"}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="pointer-events-none absolute top-4 start-4 flex flex-col gap-1.5">
+                    {pct > 0 && <span className="bg-wine-800 text-cream text-[0.62rem] font-semibold uppercase tracking-[0.18em] px-2.5 py-1">{t("common.off", { n: pct })}</span>}
+                    {p.newArrival && <span className="bg-ink/85 text-cream text-[0.62rem] uppercase tracking-[0.18em] px-2.5 py-1">{t("p.newBadge")}</span>}
+                    {p.bestseller && <span className="bg-cream/90 text-ink border border-ink/10 text-[0.62rem] uppercase tracking-[0.18em] px-2.5 py-1">{t("p.bestBadge")}</span>}
+                  </div>
+                  {/* view dots */}
+                  {activeImages.length > 1 && (
+                    <div className="absolute bottom-3 inset-x-0 flex justify-center gap-1.5 pointer-events-none">
+                      {activeImages.map((_, i) => (
+                        <span key={i} className={cn("h-1.5 rounded-full transition-all duration-300", viewIdx === i ? "w-5 bg-wine-800" : "w-1.5 bg-ink/25")} aria-hidden="true" />
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+            {/* Thumbnail media list including 2D photos and dedicated 3D Interactive tile */}
+            <div className="mt-3 grid grid-cols-4 gap-2.5">
+              {activeImages.map((imgSrc, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => {
+                    setIs3D(false);
+                    jumpTo(i);
+                  }}
+                  aria-label={`${p.name[lang]} photo ${i + 1}`}
+                  aria-pressed={!is3D && viewIdx === i}
+                  className={cn(
+                    "overflow-hidden border transition-all rounded-xs aspect-[4/5] bg-cream-2 relative cursor-pointer",
+                    !is3D && viewIdx === i ? "border-wine-800 ring-2 ring-wine-800" : "border-ink/10 opacity-70 hover:opacity-100"
+                  )}
+                >
+                  <img src={imgSrc} alt="" className="absolute inset-0 h-full w-full object-cover object-center" />
                 </button>
               ))}
+
+              {/* Dedicated 3D Interactive Thumbnail Tile */}
+              <button
+                type="button"
+                onClick={() => setIs3D(true)}
+                aria-label={t("p.view3d")}
+                aria-pressed={is3D}
+                data-testid="thumbnail-3d-tile"
+                className={cn(
+                  "overflow-hidden border transition-all rounded-xs aspect-[4/5] bg-gradient-to-b from-ink/90 to-wine-950 text-cream relative cursor-pointer flex flex-col items-center justify-center p-2 text-center group",
+                  is3D ? "border-amber-400 ring-2 ring-amber-400 shadow-md scale-102" : "border-ink/20 opacity-80 hover:opacity-100"
+                )}
+              >
+                <span className="text-xl mb-1 group-hover:rotate-45 transition-transform duration-300">⟳</span>
+                <span className="text-[0.62rem] font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+                  3D View
+                </span>
+                <span className="text-[0.55rem] text-cream/70 mt-0.5">
+                  {lang === "ar" ? "معاينة تفاعلية" : "Interactive 360°"}
+                </span>
+              </button>
             </div>
           </div>
 
@@ -254,6 +328,7 @@ export function ProductPage({ id }: { id: string }) {
               <Btn
                 onClick={onAdd}
                 disabled={!inStock || !colorAvailable}
+                data-testid="add-to-cart-btn"
                 className={cn("w-full py-4 text-sm", added && "bg-green-800 hover:bg-green-800")}
               >
                 {added ? <><IcCheck className="h-5 w-5" /> {t("p.added")}</> : !inStock ? t("p.outOfStock") : t("p.add")}
@@ -323,6 +398,24 @@ export function ProductPage({ id }: { id: string }) {
           </div>
           <Btn onClick={onAdd} disabled={!inStock || !colorAvailable} className="shrink-0 px-6 py-3">
             {added ? <><IcCheck className="h-4 w-4" /> {t("p.added")}</> : t("p.add")}
+          </Btn>
+        </div>
+      </div>
+
+      {/* Mobile Sticky Bottom CTA */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-ink/15 bg-cream/95 backdrop-blur-md p-3 sm:hidden shadow-lg">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="truncate text-xs font-medium text-ink">{p.name[lang]}</p>
+            <p className="text-sm font-semibold tabular-nums text-wine-900">{money(p.price, lang)}</p>
+          </div>
+          <Btn
+            onClick={onAdd}
+            disabled={!inStock || !colorAvailable}
+            className="shrink-0 py-2.5 px-5 text-xs font-semibold uppercase tracking-wider"
+            data-testid="mobile-sticky-add-btn"
+          >
+            {added ? <><IcCheck className="h-4 w-4" /> {t("p.added")}</> : !inStock ? t("p.outOfStock") : t("p.add")}
           </Btn>
         </div>
       </div>

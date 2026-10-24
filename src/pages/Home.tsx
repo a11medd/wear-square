@@ -1,17 +1,29 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { cn } from "../utils/cn";
 import { useApp } from "../lib/store";
 import { PRODUCTS, type Category } from "../lib/products";
 import { ProductCard } from "../components/ProductCard";
-import { Reveal, SectionHead, Btn, IcArrow, IcShield, IcCoin, IcBagSimple, IcDoc } from "../components/ui";
+import { Reveal, SectionHead, Btn, IcArrow, IcShield, IcTruck, IcSwap, IcCoin, IcBagSimple, IcDoc } from "../components/ui";
 
 const px = (id: number, w: number, h: number) =>
   `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&fit=crop&w=${w}&h=${h}`;
 
 const FAMILY: { key: Category; img: string; alt: { en: string; ar: string } }[] = [
-  { key: "men", img: px(33290971, 900, 1200), alt: { en: "Elegant man in a tailored dark suit — studio portrait", ar: "رجل أنيق ببدلة داكنة — تصوير استوديو" } },
-  { key: "women", img: px(19977394, 900, 1200), alt: { en: "Elegant woman in a black evening dress — studio portrait", ar: "امرأة أنيقة بفستان أسود — تصوير استوديو" } },
-  { key: "kids", img: px(36909817, 900, 1200), alt: { en: "Stylish boy in a tuxedo — studio portrait", ar: "طفل أنيق ببدلة — تصوير استوديو" } },
+  {
+    key: "men",
+    img: "/categories/men_model.jpg",
+    alt: { en: "Men collection — model in Oxford cotton shirt", ar: "أزياء الرجال — عارض يرتدي قميص أكسفورد القطني وبنطال تشينو من التشكيلة" },
+  },
+  {
+    key: "women",
+    img: "/categories/women_model.jpg",
+    alt: { en: "Women collection — model in terracotta wrap dress", ar: "أزياء النساء — عارضة ترتدي الفستان الملفوف بلون التيراكوتا من التشكيلة" },
+  },
+  {
+    key: "kids",
+    img: "/categories/kids_model.jpg",
+    alt: { en: "Kids collection — model in organic cotton hoodie", ar: "أزياء الأطفال — طفل يرتدي هودي وبنطال قطني مريح من التشكيلة" },
+  },
 ];
 
 export function Home() {
@@ -19,6 +31,26 @@ export function Home() {
   const newOnes = PRODUCTS.filter((p) => p.newArrival).slice(0, 6);
   const best = PRODUCTS.filter((p) => p.bestseller).slice(0, 8);
   const railRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
+
+  const togglePlay = () => {
+    if (!videoRef.current) return;
+    if (isPlaying) {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      videoRef.current.play();
+      setIsPlaying(true);
+    }
+  };
+
+  const toggleMute = () => {
+    if (!videoRef.current) return;
+    videoRef.current.muted = !isMuted;
+    setIsMuted(!isMuted);
+  };
 
   const scrollRail = (dirn: number) => {
     const el = railRef.current;
@@ -29,46 +61,122 @@ export function Home() {
 
   return (
     <div>
-      {/* ================= HERO ================= */}
-      <section className="relative h-[100svh] min-h-[620px] overflow-hidden bg-ink" aria-label="Wear Square hero">
-        <img
-          src={px(10295323, 1920, 1150)}
-          alt={lang === "ar" ? "إعلان أزياء وير سكوير لعائلة أنيقة" : "Wear Square family fashion campaign"}
-          className="kenburns absolute inset-0 h-full w-full object-cover object-[center_28%] opacity-95"
-          fetchPriority="high"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-wine-950 via-wine-950/60 to-wine-900/35" />
-        <div className="absolute inset-0 bg-gradient-to-b from-ink/45 via-transparent to-transparent" />
+      {/* ================= HERO COMMERCIAL VIDEO SHOWCASE ================= */}
+      <section className="relative h-[100svh] min-h-[640px] w-full overflow-hidden bg-ink" aria-label="Wear Square brand commercial film">
+        {/* Brand Commercial Video - Fullscreen, unobstructed and vivid */}
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted={isMuted}
+          playsInline
+          poster="/images/campaign/scene1_family.jpg"
+          className="absolute inset-0 h-full w-full object-cover object-center brightness-100 contrast-100"
+          data-testid="hero-commercial-video"
+          key="wear-square-hero-film"
+        >
+          <source src="/videos/hero_family.webm" type="video/webm" />
+          <source src="/videos/hero_family.mp4" type="video/mp4" />
+        </video>
 
-        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-end px-4 sm:px-6 pb-16 md:pb-24">
-          <p className="anim-fade-up mb-5 text-[0.7rem] sm:text-xs uppercase tracking-[0.42em] text-cream/70" style={{ animationDelay: "0.15s" }}>
-            W S — {lang === "ar" ? "أزياء العائلة اليومية" : "Everyday family fashion"}
-          </p>
-          <h1 className="font-display text-cream text-[13.5vw] leading-[1.02] sm:text-6xl md:text-7xl lg:text-[5.2rem] font-medium tracking-tight">
-            <span className="hline"><span style={{ animationDelay: "0.25s" }}>{t("hero.title1")}</span></span>
-            <span className="hline"><span style={{ animationDelay: "0.42s" }} className="italic text-cream-3">{t("hero.title2")}</span></span>
-          </h1>
-          <p className="anim-fade-up mt-6 max-w-xl text-sm sm:text-base leading-relaxed text-cream/80" style={{ animationDelay: "0.65s" }}>
-            {t("hero.sub")}
-          </p>
-          <div className="anim-fade-up mt-9 flex flex-col sm:flex-row gap-3" style={{ animationDelay: "0.8s" }}>
-            <Btn onClick={() => navigate("/shop")} className="w-full sm:w-auto">{t("hero.ctaShop")}</Btn>
-            <Btn variant="cream" onClick={() => navigate("/shop?flag=new")} className="w-full sm:w-auto border border-cream/40 bg-transparent text-cream hover:bg-cream hover:text-ink">
-              {t("hero.ctaNew")}
-            </Btn>
+        {/* Minimal subtle gradient for top navigation bar legibility only */}
+        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-ink/80 via-ink/25 to-transparent pointer-events-none" />
+
+        {/* Subtle Bottom Vignette for Scroll Indicator Readability */}
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-ink/70 via-ink/20 to-transparent pointer-events-none" />
+
+        {/* Minimalist & Prestigious Scroll Down Button */}
+        <button
+          type="button"
+          onClick={() => {
+            const el = document.getElementById("campaign-editorial");
+            if (el) el.scrollIntoView({ behavior: "smooth" });
+          }}
+          aria-label={lang === "ar" ? "الانتقال للأسفل واستكشاف التشكيلة" : "Scroll down to explore collection"}
+          className="pointer-events-auto absolute bottom-6 start-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5 text-white/80 hover:text-white transition-all duration-300 group cursor-pointer"
+        >
+          <span className="text-[10px] tracking-[0.25em] uppercase font-light text-white/75 group-hover:text-white transition-colors">
+            {lang === "ar" ? "استكشف التشكيلة" : "Scroll to explore"}
+          </span>
+          <div className="w-6 h-10 rounded-full border border-white/35 bg-black/25 backdrop-blur-md flex items-start justify-center p-1.5 group-hover:border-white/70 group-hover:bg-black/40 transition-all shadow-lg">
+            <span className="w-1 h-2 rounded-full bg-white/90 animate-bounce mt-0.5" />
           </div>
-          <ul className="anim-fade-up mt-12 flex flex-wrap gap-x-8 gap-y-2 text-[0.7rem] uppercase tracking-[0.2em] text-cream/60" style={{ animationDelay: "1s" }}>
-            {["hero.trust1", "hero.trust2", "hero.trust3"].map((k) => (
-              <li key={k} className="flex items-center gap-2">
-                <span className="h-1 w-1 rounded-full bg-cream/50" /> {t(k)}
-              </li>
-            ))}
-          </ul>
-        </div>
+        </button>
+      </section>
 
-        <div className="anim-fade-in absolute bottom-6 end-6 z-10 hidden md:flex items-center gap-2 text-cream/50" style={{ animationDelay: "1.4s" }}>
-          <span className="text-[0.65rem] uppercase tracking-[0.3em]">{t("hero.scroll")}</span>
-          <span className="block h-px w-14 bg-cream/40 origin-center animate-pulse" />
+      {/* ================= DEDICATED CAMPAIGN EDITORIAL & HERO STATEMENT ================= */}
+      {/* مكان مخصص وأنيق لكلمات الحملة الترويجية وأزرار الشراء بعيداً عن حجب الإعلان */}
+      <section
+        id="campaign-editorial"
+        className="relative bg-[#121011] text-cream py-14 sm:py-18 md:py-24 border-b border-cream/10"
+        aria-label="Wear Square campaign introduction"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
+            {/* Title & Collection Tag */}
+            <div className="lg:col-span-7">
+              <p className="mb-4 inline-flex items-center gap-2 text-[0.72rem] sm:text-xs uppercase tracking-[0.38em] text-amber-300/90 font-medium">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                W S — {lang === "ar" ? "أزياء العائلة اليومية · تشكيلة الموسم" : "Everyday Family Fashion · Autumn Campaign"}
+              </p>
+              <h1 className="font-display text-cream text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] font-medium tracking-tight leading-[1.06]">
+                <span className="block">{t("hero.title1")}</span>
+                <span className="block italic text-cream-3 mt-1">{t("hero.title2")}</span>
+              </h1>
+            </div>
+
+            {/* Description & Action Buttons */}
+            <div className="lg:col-span-5 flex flex-col justify-end">
+              <p className="text-sm sm:text-base md:text-lg leading-relaxed text-cream/85 mb-8 max-w-xl">
+                {t("hero.sub")}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3.5">
+                <Btn onClick={() => navigate("/shop")} className="w-full sm:w-auto px-8 py-3.5 text-sm font-medium shadow-xl">
+                  {t("hero.ctaShop")}
+                </Btn>
+                <Btn
+                  variant="cream"
+                  onClick={() => navigate("/shop?flag=new")}
+                  className="w-full sm:w-auto px-8 py-3.5 text-sm font-medium border border-cream/35 bg-white/5 backdrop-blur-xs text-cream hover:bg-cream hover:text-ink transition-colors"
+                >
+                  {t("hero.ctaNew")}
+                </Btn>
+              </div>
+            </div>
+          </div>
+
+          {/* Luxury Trust & Benefits Cards */}
+          <div className="mt-14 pt-10 border-t border-cream/10 grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+            <div className="p-4 sm:p-5 rounded-xl border border-cream/10 bg-white/[0.03] backdrop-blur-xs flex items-center gap-3.5">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-wine-800/40 text-amber-300 border border-wine-700/50">
+                <IcShield className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs sm:text-sm font-medium text-cream">{t("hero.trust1")}</p>
+                <p className="text-[0.68rem] text-cream/60 mt-0.5">{lang === "ar" ? "أقمشة طبيعية 100% عالية الجودة" : "100% Natural premium fabrics"}</p>
+              </div>
+            </div>
+
+            <div className="p-4 sm:p-5 rounded-xl border border-cream/10 bg-white/[0.03] backdrop-blur-xs flex items-center gap-3.5">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-wine-800/40 text-amber-300 border border-wine-700/50">
+                <IcTruck className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs sm:text-sm font-medium text-cream">{t("hero.trust3")}</p>
+                <p className="text-[0.68rem] text-cream/60 mt-0.5">{lang === "ar" ? "تغطية كاملة لجميع المحافظات الـ 27" : "Fast delivery across all governorates"}</p>
+              </div>
+            </div>
+
+            <div className="p-4 sm:p-5 rounded-xl border border-cream/10 bg-white/[0.03] backdrop-blur-xs flex items-center gap-3.5">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-wine-800/40 text-amber-300 border border-wine-700/50">
+                <IcSwap className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs sm:text-sm font-medium text-cream">{t("hero.trust2")}</p>
+                <p className="text-[0.68rem] text-cream/60 mt-0.5">{lang === "ar" ? "معاينة قبل الاستلام واستبدال فوري" : "Hassle-free 14-day exchange"}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -162,10 +270,10 @@ export function Home() {
         <div className="grid lg:grid-cols-2">
           <div className="relative min-h-[380px] lg:min-h-[640px] overflow-hidden">
             <img
-              src={px(20227845, 1200, 1500)}
-              alt={lang === "ar" ? "إطلالة من تشكيلة نهاية الأسبوع" : "Look from the weekend capsule"}
+              src="/categories/capsule_autumn.jpg"
+              alt={lang === "ar" ? "تشكيلة عطلة نهاية الأسبوع المتناسقة للعائلة" : "Coordinated family weekend capsule look"}
               loading="lazy"
-              className="absolute inset-0 h-full w-full object-cover object-[center_25%] transition-transform duration-[2.5s] ease-out hover:scale-[1.05]"
+              className="absolute inset-0 h-full w-full object-cover object-[center_35%] transition-transform duration-[2.5s] ease-out hover:scale-[1.05]"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-wine-950/60 to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-wine-950/70" />
           </div>
@@ -226,7 +334,12 @@ export function Home() {
         <div className="grid items-center gap-10 lg:grid-cols-2">
           <Reveal mask className="order-2 lg:order-1">
             <div className="relative overflow-hidden">
-              <img src={px(10295321, 1200, 900)} alt={lang === "ar" ? "عائلة من أجيال مختلفة بإطلالات أنيقة" : "A multi-generational family in elegant coordinated outfits"} loading="lazy" className="w-full object-cover aspect-[4/3]" />
+              <img
+                src="https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=1200&q=80"
+                alt={lang === "ar" ? "عائلة من أجيال مختلفة بإطلالات أنيقة" : "A multi-generational family in elegant coordinated outfits"}
+                loading="lazy"
+                className="w-full object-cover aspect-[4/3]"
+              />
               <div className="absolute inset-0 ring-1 ring-inset ring-ink/10" />
               <div className="absolute bottom-0 start-0 bg-wine-900 px-5 py-3 text-cream text-[0.68rem] uppercase tracking-[0.25em]">
                 W S — {lang === "ar" ? "لكل العائلة" : "Every family"}

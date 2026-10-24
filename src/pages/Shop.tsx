@@ -7,6 +7,21 @@ import { Reveal, Btn, IcClose, IcBag } from "../components/ui";
 
 const MAXP = 1200;
 
+const CAT_BANNERS: Record<Category, { img: string; subtitle: { en: string; ar: string } }> = {
+  men: {
+    img: "/categories/men_model.jpg",
+    subtitle: { en: "Tailored everyday staples, Oxford shirts & casual chinos", ar: "قمصان أكسفورد وبناطيل تشينو وقطع أساسية مريحة" },
+  },
+  women: {
+    img: "/categories/women_model.jpg",
+    subtitle: { en: "Midi wrap dresses, linen shirts & quiet luxury silhouettes", ar: "فساتين ملفوفة أنيقة، قمصان كتان وتصاميم راقية" },
+  },
+  kids: {
+    img: "/categories/kids_model.jpg",
+    subtitle: { en: "Soft organic cotton sets built for free movement and play", ar: "أطقم قطنية ناعمة وهوديز مريحة لحرية الحركة واللعب" },
+  },
+};
+
 interface Filters {
   cat: Category | "";
   flagNew: boolean;
@@ -190,6 +205,28 @@ export function Shop() {
             <h1 className="font-display text-5xl md:text-6xl font-medium">{title}</h1>
             <p className="text-sm text-mute" aria-live="polite">{t("shop.results", { n: results.length })}</p>
           </div>
+          {f.cat && CAT_BANNERS[f.cat] && (
+            <div className="mt-6 relative h-40 sm:h-52 md:h-60 rounded-sm overflow-hidden border border-ink/10">
+              <img
+                src={CAT_BANNERS[f.cat].img}
+                alt={title}
+                className="absolute inset-0 h-full w-full object-cover object-[center_28%]"
+                loading="eager"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-wine-950/85 via-wine-950/50 to-transparent rtl:bg-gradient-to-l" />
+              <div className="relative z-10 h-full flex flex-col justify-end p-5 sm:p-7 text-cream">
+                <span className="text-[0.65rem] sm:text-xs uppercase tracking-[0.25em] text-cream/70 mb-1">
+                  {lang === "ar" ? "تشكيلة حصرية" : "Collection Spotlight"}
+                </span>
+                <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-medium tracking-tight">
+                  {t(`family.${f.cat}`)}
+                </h2>
+                <p className="mt-1 text-xs sm:text-sm text-cream/80 max-w-md">
+                  {CAT_BANNERS[f.cat].subtitle[lang]}
+                </p>
+              </div>
+            </div>
+          )}
         </Reveal>
 
         <div className="mt-10 grid gap-10 lg:grid-cols-[240px_1fr]">

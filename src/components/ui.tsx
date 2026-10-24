@@ -201,10 +201,9 @@ export function SizeGuideTable({ kids }: { kids: boolean }) {
 
 // ---------- Buttons ----------
 export function Btn({
-  children, onClick, variant = "primary", className, disabled, type = "button",
-}: {
-  children: React.ReactNode; onClick?: () => void; variant?: "primary" | "outline" | "ghost" | "cream";
-  className?: string; disabled?: boolean; type?: "button" | "submit";
+  children, onClick, variant = "primary", className, disabled, type = "button", ...rest
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: "primary" | "outline" | "ghost" | "cream";
 }) {
   return (
     <button
@@ -220,6 +219,7 @@ export function Btn({
         variant === "cream" && "bg-cream text-ink hover:bg-cream-2",
         className
       )}
+      {...rest}
     >
       {children}
     </button>

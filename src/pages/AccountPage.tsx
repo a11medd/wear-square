@@ -2,12 +2,12 @@ import { useState, type ReactNode } from "react";
 import { cn } from "../utils/cn";
 import { useApp } from "../lib/store";
 import { money, GOVERNORATES } from "../lib/products";
-import { Btn, Reveal, IcCheck, IcTrash } from "../components/ui";
+import { Btn, Reveal, IcCheck, IcTrash, IcArrow } from "../components/ui";
 
 type Tab = "profile" | "orders" | "addresses" | "login" | "register";
 
 export function AccountPage() {
-  const { t, lang, route, navigate, user, login, logout, orders, addresses, removeAddress, toast } = useApp();
+  const { t, lang, route, navigate, user, login, logout, orders, addresses, removeAddress, toast, cart } = useApp();
   const initialTab = (route.query.get("tab") as Tab | null) ?? (user ? "profile" : "login");
   const [tab, setTab] = useState<Tab>(initialTab);
   const [form, setForm] = useState({ name: "", email: "", password: "" });
@@ -66,81 +66,142 @@ export function AccountPage() {
           <p className="mt-2 text-sm text-mute">{t("acc.demoNote")}</p>
         </Reveal>
 
-        <div className="mt-10 grid gap-10 lg:grid-cols-[260px_1fr]">
-          {/* sidebar */}
-          <aside className="border border-ink/15 self-start lg:sticky lg:top-28">
-            <div className="flex items-center gap-3 border-b border-ink/10 p-4">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-wine-800 font-display text-lg text-cream">
-                {user ? user.name[0]?.toUpperCase() : "G"}
-              </span>
-              <div className="min-w-0">
-                <p className="truncate font-medium text-sm">{user ? user.name : t("acc.guest")}</p>
-                <p className="truncate text-xs text-mute">{user ? user.email : ""}</p>
+        {!user ? (
+          <div className="mt-10 grid gap-8 lg:grid-cols-12 items-start">
+            {/* Column 1: Standalone Guest Checkout Card */}
+            <div className="lg:col-span-5 rounded-sm border-2 border-wine-800 bg-wine-50/50 p-6 md:p-8 shadow-sm">
+              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-200 px-3 py-1 text-xs font-semibold mb-4">
+                <span className="h-2 w-2 rounded-full bg-emerald-600 animate-pulse" />
+                {lang === "ar" ? "الخيار الأسرع للشراء" : "Fastest Option"}
+              </div>
+
+              <h2 className="font-display text-2xl md:text-3xl text-wine-950 font-medium">
+                {lang === "ar" ? "إتمام الشراء السريع كزائر" : "Continue as Guest"}
+              </h2>
+
+              <p className="mt-3 text-sm text-ink/75 leading-relaxed">
+                {lang === "ar"
+                  ? "أتمم طلبك فوراً بدون إنشاء حساب أو تذكر كلمة مرور. سنطلب منك فقط معلومات التوصيل لاستلام الشحنة."
+                  : "Complete your order immediately without creating an account or remembering passwords. We will only ask for delivery details."}
+              </p>
+
+              <ul className="mt-6 space-y-3 text-xs text-ink/80">
+                <li className="flex items-center gap-2.5">
+                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-emerald-700 text-cream text-[0.65rem] font-bold">✓</span>
+                  <span className="font-medium">{lang === "ar" ? "بدون تسجيل دخول أو إنشاء حساب نهائياً" : "Zero registration or password required"}</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-emerald-700 text-cream text-[0.65rem] font-bold">✓</span>
+                  <span className="font-medium">{lang === "ar" ? "معلومات التوصيل فقط (الاسم، التليفون، العنوان)" : "Delivery info only (name, phone, address)"}</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-emerald-700 text-cream text-[0.65rem] font-bold">✓</span>
+                  <span className="font-medium">{lang === "ar" ? "الدفع عند الاستلام متاح لجميع أنحاء الجمهورية" : "Cash on delivery available nationwide"}</span>
+                </li>
+              </ul>
+
+              <div className="mt-8 pt-4 border-t border-wine-800/20">
+                <Btn
+                  className="w-full py-4 text-sm font-bold uppercase tracking-wide bg-wine-800 hover:bg-wine-900 text-cream shadow-md flex items-center justify-center gap-2"
+                  onClick={() => navigate(cart.length > 0 ? "/checkout" : "/shop")}
+                  data-testid="account-guest-btn"
+                >
+                  {lang === "ar" ? "المتابعة كزائر وإتمام الشراء" : "Proceed as Guest"}
+                  <IcArrow className="h-4 w-4 rtl:rotate-180" />
+                </Btn>
+                {cart.length === 0 && (
+                  <p className="mt-2 text-center text-xs text-mute">
+                    {lang === "ar" ? "سلتك فارغة حالياً — سينقلك لتصفح المنتجات" : "Your cart is empty — opens shop"}
+                  </p>
+                )}
               </div>
             </div>
-            <nav className="p-2" aria-label="Account">
-              {user ? (
-                <>
-                  {tabBtn("profile", t("acc.profile"))}
-                  {tabBtn("orders", t("acc.orders"))}
-                  {tabBtn("addresses", t("acc.addresses"))}
-                  <button
-                    onClick={() => { logout(); toast(t("toast.logout")); setTab("login"); }}
-                    className="flex w-full items-center gap-3 border-s-2 border-transparent px-4 py-3.5 text-sm text-wine-800 hover:bg-wine-100/60"
-                  >
-                    {t("acc.logout")}
-                  </button>
-                </>
-              ) : (
-                <>
-                  {tabBtn("login", t("acc.login"))}
-                  {tabBtn("register", t("acc.register"))}
-                </>
-              )}
-            </nav>
-          </aside>
 
-          {/* panel */}
-          <div className="min-w-0">
-            {/* -------- LOGIN -------- */}
-            {tab === "login" && !user && (
-              <div className="anim-fade-up max-w-md">
-                <h2 className="font-display text-3xl">{t("acc.login")}</h2>
-                <p className="mt-2 text-sm text-mute">{t("acc.loginSub")}</p>
-                <div className="mt-7 space-y-4">
-                  <Field id="l-email" label={t("acc.email")} type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} placeholder="you@example.com" />
-                  <Field id="l-pass" label={t("acc.password")} type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} placeholder="••••" />
-                  {err && <p className="text-xs text-wine-800" role="alert">{err}</p>}
-                  <Btn className="w-full py-3.5" onClick={doLogin}>{t("acc.loginBtn")}</Btn>
-                </div>
-                <p className="mt-5 text-sm text-mute">
-                  {t("acc.noAccount")}{" "}
-                  <button onClick={() => { setTab("register"); setErr(null); }} className="text-wine-800 underline underline-offset-4">{t("acc.register")}</button>
-                </p>
-                <button onClick={() => navigate("/shop")} className="mt-6 text-sm text-ink/70 hover:text-ink underline underline-offset-4">
-                  {t("common.guest")}
+            {/* Column 2: Account Login & Register Card */}
+            <div className="lg:col-span-7 rounded-sm border border-ink/15 bg-cream p-6 md:p-8">
+              <div className="flex border-b border-ink/10 mb-6">
+                <button
+                  onClick={() => { setTab("login"); setErr(null); }}
+                  className={cn(
+                    "pb-3 px-4 text-sm font-medium border-b-2 transition-colors",
+                    tab === "login" ? "border-wine-800 text-wine-900 font-bold" : "border-transparent text-mute hover:text-ink"
+                  )}
+                >
+                  {t("acc.login")}
+                </button>
+                <button
+                  onClick={() => { setTab("register"); setErr(null); }}
+                  className={cn(
+                    "pb-3 px-4 text-sm font-medium border-b-2 transition-colors",
+                    tab === "register" ? "border-wine-800 text-wine-900 font-bold" : "border-transparent text-mute hover:text-ink"
+                  )}
+                >
+                  {t("acc.register")}
                 </button>
               </div>
-            )}
 
-            {/* -------- REGISTER -------- */}
-            {tab === "register" && !user && (
-              <div className="anim-fade-up max-w-md">
-                <h2 className="font-display text-3xl">{t("acc.register")}</h2>
-                <p className="mt-2 text-sm text-mute">{t("acc.registerSub")}</p>
-                <div className="mt-7 space-y-4">
-                  <Field id="r-name" label={t("acc.name")} value={form.name} onChange={(v) => setForm({ ...form, name: v })} placeholder={lang === "ar" ? "الاسم بالكامل" : "Full name"} />
-                  <Field id="r-email" label={t("acc.email")} type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} placeholder="you@example.com" />
-                  <Field id="r-pass" label={t("acc.password")} type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} placeholder="••••" />
-                  {err && <p className="text-xs text-wine-800" role="alert">{err}</p>}
-                  <Btn className="w-full py-3.5" onClick={doRegister}>{t("acc.registerBtn")}</Btn>
+              {tab === "login" ? (
+                <div>
+                  <h3 className="font-display text-2xl font-medium">{t("acc.login")}</h3>
+                  <p className="mt-1 text-xs text-mute">{t("acc.loginSub")}</p>
+                  <div className="mt-6 space-y-4">
+                    <Field id="l-email" label={t("acc.email")} type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} placeholder="you@example.com" />
+                    <Field id="l-pass" label={t("acc.password")} type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} placeholder="••••" />
+                    {err && <p className="text-xs text-wine-800" role="alert">{err}</p>}
+                    <Btn className="w-full py-3.5" onClick={doLogin}>{t("acc.loginBtn")}</Btn>
+                  </div>
+                  <p className="mt-5 text-sm text-mute">
+                    {t("acc.noAccount")}{" "}
+                    <button onClick={() => { setTab("register"); setErr(null); }} className="text-wine-800 underline underline-offset-4">{t("acc.register")}</button>
+                  </p>
                 </div>
-                <p className="mt-5 text-sm text-mute">
-                  {t("acc.haveAccount")}{" "}
-                  <button onClick={() => { setTab("login"); setErr(null); }} className="text-wine-800 underline underline-offset-4">{t("acc.login")}</button>
-                </p>
+              ) : (
+                <div>
+                  <h3 className="font-display text-2xl font-medium">{t("acc.register")}</h3>
+                  <p className="mt-1 text-xs text-mute">{t("acc.registerSub")}</p>
+                  <div className="mt-6 space-y-4">
+                    <Field id="r-name" label={t("acc.name")} value={form.name} onChange={(v) => setForm({ ...form, name: v })} placeholder={lang === "ar" ? "الاسم بالكامل" : "Full name"} />
+                    <Field id="r-email" label={t("acc.email")} type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} placeholder="you@example.com" />
+                    <Field id="r-pass" label={t("acc.password")} type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} placeholder="••••" />
+                    {err && <p className="text-xs text-wine-800" role="alert">{err}</p>}
+                    <Btn className="w-full py-3.5" onClick={doRegister}>{t("acc.registerBtn")}</Btn>
+                  </div>
+                  <p className="mt-5 text-sm text-mute">
+                    {t("acc.haveAccount")}{" "}
+                    <button onClick={() => { setTab("login"); setErr(null); }} className="text-wine-800 underline underline-offset-4">{t("acc.login")}</button>
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="mt-10 grid gap-10 lg:grid-cols-[260px_1fr]">
+            {/* sidebar */}
+            <aside className="border border-ink/15 self-start lg:sticky lg:top-28">
+              <div className="flex items-center gap-3 border-b border-ink/10 p-4">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-wine-800 font-display text-lg text-cream">
+                  {user.name[0]?.toUpperCase()}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-sm">{user.name}</p>
+                  <p className="truncate text-xs text-mute">{user.email}</p>
+                </div>
               </div>
-            )}
+              <nav className="p-2" aria-label="Account">
+                {tabBtn("profile", t("acc.profile"))}
+                {tabBtn("orders", t("acc.orders"))}
+                {tabBtn("addresses", t("acc.addresses"))}
+                <button
+                  onClick={() => { logout(); toast(t("toast.logout")); setTab("login"); }}
+                  className="flex w-full items-center gap-3 border-s-2 border-transparent px-4 py-3.5 text-sm text-wine-800 hover:bg-wine-100/60"
+                >
+                  {t("acc.logout")}
+                </button>
+              </nav>
+            </aside>
+
+            {/* panel */}
+            <div className="min-w-0">
 
             {/* -------- PROFILE -------- */}
             {tab === "profile" && user && (
@@ -255,8 +316,9 @@ export function AccountPage() {
                 <Btn className="mt-6" onClick={() => setTab("login")}>{t("acc.loginBtn")}</Btn>
               </div>
             )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
